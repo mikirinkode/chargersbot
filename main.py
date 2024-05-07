@@ -1,8 +1,27 @@
 import streamlit as st
+import os
+from dotenv import load_dotenv
+from groq import Groq
+from chargers_bot import ChargersBot
+
+
+#SETUP BOT
+
+# Load the .env file
+load_dotenv()
+
+# Access the API key
+apiKey = os.getenv('GROQ_API_KEY')
+client = Groq(api_key = apiKey)
 
 # initial chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+bot = ChargersBot(llm = client)
+
+
+# STREAMLIT UI BEGIN FROM HERE
 
 # Initial message (at top of screen)
 with st.chat_message("assistant"):
@@ -21,12 +40,10 @@ if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # get response from LLM
-    response = f"Echo: {prompt}"
-    
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        st.markdown(response)
-
+        result = bot.chat(prompt)
+        st.write(result)
+            
     # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state.messages.append({"role": "assistant", "content": result})
